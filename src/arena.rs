@@ -74,7 +74,7 @@ impl<T: ?Sized, H> Arena<T, H> {
 
 #[cfg(test)]
 mod test {
-	use crate::Arena;
+	use super::Arena;
 
 	#[test]
 	fn insert_arena() {

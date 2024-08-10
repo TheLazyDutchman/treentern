@@ -1,38 +1,69 @@
-use std::{marker::Sized, sync::LazyLock};
-
-use arena::Arena;
+use std::marker::Sized;
 
 pub mod arena;
 
 pub trait Intern {
-	fn intern(&'static self) -> Interned<Self>;
+	type InternedType: ?Sized;
 
-	fn intern_owned(self) -> Interned<Self>
+	fn intern(&'static self) -> Interned<Self::InternedType>;
+
+	fn intern_owned(self) -> Interned<Self::InternedType>
 	where
-		Self: Sized,
+		Self: Sized + 'static,
 	{
 		Box::leak(Box::new(self)).intern()
+	}
+}
+
+impl<T: ?Sized + Intern> Intern for &'static T {
+	type InternedType = T::InternedType;
+
+	fn intern(&'static self) -> Interned<Self::InternedType> {
+		T::intern(self)
 	}
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Interned<T: ?Sized + 'static>(&'static T);
 
-static STRING_ARENA: LazyLock<Arena<String>> = LazyLock::new(Arena::new);
+macro_rules! basic_impl {
+	($ty:ty $(, $import:path)?) => {
+		paste::paste! {
+			mod [<$ty:snake _intern_impl>] {
+				use std::sync::LazyLock;
+				use crate::arena::Arena;
+				use crate::Intern;
+				use crate::Interned;
+				$(use $import :: $ty;)?
 
-impl Intern for String {
-	fn intern(&'static self) -> Interned<Self> {
-		Interned(STRING_ARENA.insert(self))
-	}
+				static ARENA: LazyLock<Arena<$ty>> = LazyLock::new(Arena::new);
+
+				impl Intern for $ty {
+                                        type InternedType = Self;
+
+					fn intern(&'static self) -> Interned<Self> {
+						Interned(ARENA.insert(self))
+					}
+				}
+			}
+		}
+	};
 }
 
-static STR_ARENA: LazyLock<Arena<str>> = LazyLock::new(Arena::new);
-
-impl Intern for str {
-	fn intern(&'static self) -> Interned<Self> {
-		Interned(STR_ARENA.insert(self))
-	}
-}
+basic_impl!(String);
+basic_impl!(str);
+basic_impl!(OsString, std::ffi);
+basic_impl!(CString, std::ffi);
+basic_impl!(u8);
+basic_impl!(u16);
+basic_impl!(u32);
+basic_impl!(u64);
+basic_impl!(u128);
+basic_impl!(i8);
+basic_impl!(i16);
+basic_impl!(i32);
+basic_impl!(i64);
+basic_impl!(i128);
 
 #[cfg(test)]
 mod test {
