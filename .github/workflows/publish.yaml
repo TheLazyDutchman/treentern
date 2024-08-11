@@ -39,7 +39,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
       - name: Update Changelog.md
-        if: steps.publish-action.outputs.new_version = 'true' && steps.publish-action.outputs.publish == 'true'
+        if: steps.publish-action.outputs.new_version == 'true' && steps.publish-action.outputs.publish == 'true'
         run:
           changelog -o Changelog.md
 
