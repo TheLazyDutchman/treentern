@@ -1,6 +1,6 @@
 [package]
 name = "treentern"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "An interning library that makes it easy to intern tree like types"
 keywords = ["intern", "interning", "parsing"]
