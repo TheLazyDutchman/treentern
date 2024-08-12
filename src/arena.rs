@@ -22,6 +22,7 @@ impl<T: ?Sized, H: Default> Default for Arena<T, H> {
 }
 
 impl<T: ?Sized> Arena<T> {
+	#[must_use]
 	pub fn new() -> Self {
 		Self::default()
 	}
@@ -32,6 +33,11 @@ impl<T: ?Sized, H> Arena<T, H> {
 		self.values.lock().unwrap()[index.0]
 	}
 
+	/// Insert a value into the arena
+	///
+	/// # Panics
+	/// The arena uses a [`Mutex`] internally, which can become poisoned if a thread panics
+	/// while holding the mutex
 	pub fn insert(&'static self, value: &'static T) -> &'static T
 	where
 		T: Hash + Eq,

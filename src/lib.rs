@@ -1,3 +1,5 @@
+#![deny(clippy::pedantic)]
+
 use std::marker::Sized;
 
 pub mod arena;
