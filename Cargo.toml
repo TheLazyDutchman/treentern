@@ -3,7 +3,7 @@ name = "treentern"
 version = "0.1.0"
 edition = "2021"
 description = "An interning library that makes it easy to intern tree like types"
-tags = ["intern", "interning", "parsing"]
+keywords = ["intern", "interning", "parsing"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
