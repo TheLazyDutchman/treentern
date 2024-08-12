@@ -4,6 +4,9 @@ use std::{hash::Hash, marker::Sized};
 
 pub mod arena;
 
+#[cfg(feature = "derive")]
+pub mod derive;
+
 pub trait Intern {
 	type InternedType: ?Sized;
 

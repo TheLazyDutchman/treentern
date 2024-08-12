@@ -1,0 +1,5 @@
+projects:
+  - name: treentern
+  - name: treentern-derive
+    dir: "/treentern-derive"
+    tag_prefix: "derive_"

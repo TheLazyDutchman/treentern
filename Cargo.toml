@@ -1,3 +1,6 @@
+[workspace]
+members = ["treentern-derive"]
+
 [package]
 name = "treentern"
 version = "0.1.1"
@@ -8,3 +11,11 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 paste = "1.0.15"
+treentern-derive = { path = "treentern-derive", version = "0.1.0", optional = true }
+
+[dev-dependencies]
+trybuild = "1.0.99"
+
+[features]
+default = ["derive"]
+derive = ["dep:treentern-derive"]
