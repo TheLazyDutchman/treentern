@@ -4,6 +4,8 @@ use std::{
 	sync::Mutex,
 };
 
+use crate::Interned;
+
 pub struct Arena<T: ?Sized + 'static, H = std::hash::RandomState> {
 	values: Mutex<Vec<&'static T>>,
 	indices: Mutex<HashMap<&'static T, Index, H>>,
@@ -29,8 +31,8 @@ impl<T: ?Sized> Arena<T> {
 }
 
 impl<T: ?Sized, H> Arena<T, H> {
-	fn get(&'static self, index: Index) -> &'static T {
-		self.values.lock().unwrap()[index.0]
+	fn get(&'static self, index: Index) -> Interned<T> {
+		Interned(self.values.lock().unwrap()[index.0])
 	}
 
 	/// Insert a value into the arena
@@ -38,7 +40,7 @@ impl<T: ?Sized, H> Arena<T, H> {
 	/// # Panics
 	/// The arena uses a [`Mutex`] internally, which can become poisoned if a thread panics
 	/// while holding the mutex
-	pub fn insert(&'static self, value: &'static T) -> &'static T
+	pub fn insert(&'static self, value: &'static T) -> Interned<T>
 	where
 		T: Hash + Eq,
 		H: BuildHasher,
@@ -66,10 +68,11 @@ impl<T: ?Sized, H> Arena<T, H> {
 			.lock()
 			.unwrap()
 			.insert(value, index);
-		value
+
+		Interned(value)
 	}
 
-	pub fn insert_owned(&'static self, value: T) -> &'static T
+	pub fn insert_owned(&'static self, value: T) -> Interned<T>
 	where
 		T: Hash + Eq + Sized,
 		H: BuildHasher,
@@ -93,7 +96,7 @@ mod test {
 		assert_ne!(a, b);
 		assert_eq!(a, c);
 
-		assert_eq!(a.as_ptr(), c.as_ptr());
+		assert_eq!(a.0.as_ptr(), c.0.as_ptr());
 	}
 
 	#[test]
@@ -107,6 +110,6 @@ mod test {
 		assert_ne!(a, b);
 		assert_eq!(a, c);
 
-		assert_eq!(a.as_ptr(), c.as_ptr());
+		assert_eq!(a.0.as_ptr(), c.0.as_ptr());
 	}
 }

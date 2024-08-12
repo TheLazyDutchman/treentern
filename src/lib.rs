@@ -1,6 +1,6 @@
 #![deny(clippy::pedantic)]
 
-use std::marker::Sized;
+use std::{hash::Hash, marker::Sized};
 
 pub mod arena;
 
@@ -25,8 +25,22 @@ impl<T: ?Sized + Intern> Intern for &'static T {
 	}
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialOrd, Ord)]
 pub struct Interned<T: ?Sized + 'static>(&'static T);
+
+impl<T: ?Sized> PartialEq for Interned<T> {
+	fn eq(&self, other: &Self) -> bool {
+		std::ptr::eq(self.0, other.0)
+	}
+}
+
+impl<T: ?Sized> Eq for Interned<T> {}
+
+impl<T: ?Sized> Hash for Interned<T> {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		std::ptr::from_ref(self.0).hash(state);
+	}
+}
 
 macro_rules! basic_impl {
 	($ty:ty $(, $import:path)?) => {
@@ -44,7 +58,7 @@ macro_rules! basic_impl {
                                         type InternedType = Self;
 
 					fn intern(&'static self) -> Interned<Self> {
-						Interned(ARENA.insert(self))
+						ARENA.insert(self)
 					}
 				}
 			}
@@ -56,14 +70,8 @@ basic_impl!(String);
 basic_impl!(str);
 basic_impl!(OsString, std::ffi);
 basic_impl!(CString, std::ffi);
-basic_impl!(u8);
-basic_impl!(u16);
-basic_impl!(u32);
 basic_impl!(u64);
 basic_impl!(u128);
-basic_impl!(i8);
-basic_impl!(i16);
-basic_impl!(i32);
 basic_impl!(i64);
 basic_impl!(i128);
 
