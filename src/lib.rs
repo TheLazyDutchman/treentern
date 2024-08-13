@@ -1,6 +1,6 @@
 #![deny(clippy::pedantic)]
 
-use std::{hash::Hash, marker::Sized};
+use std::{hash::Hash, marker::Sized, ops::Deref};
 
 pub mod arena;
 
@@ -42,6 +42,14 @@ impl<T: ?Sized> Eq for Interned<T> {}
 impl<T: ?Sized> Hash for Interned<T> {
 	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
 		std::ptr::from_ref(self.0).hash(state);
+	}
+}
+
+impl<T: ?Sized> Deref for Interned<T> {
+	type Target = T;
+
+	fn deref(&self) -> &Self::Target {
+		self.0
 	}
 }
 
